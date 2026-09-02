@@ -97,7 +97,10 @@ def chat():
     needs_review = log_interaction(user_input, predicted_intent, float(confidence), extracted_slots)
     
     if confidence < 0.35:
-        return jsonify({"response": "I'm sorry, I don't understand that command."})
+        if dialogue_manager.pending_intent:
+            predicted_intent = "clarification_response"
+        else:
+            return jsonify({"response": "I'm sorry, I don't understand that command."})
 
     response_prefix = ""
     if needs_review:

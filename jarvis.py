@@ -101,12 +101,15 @@ def main():
             needs_review = log_interaction(user_input, predicted_intent, float(confidence), extracted_slots)
             
             if confidence < 0.35:
-                msg_text = "I'm sorry, I don't understand that command."
-                if use_voice:
-                    voice_engine.speak(msg_text)
+                if dialogue_manager.pending_intent:
+                    predicted_intent = "clarification_response"
                 else:
-                    print(f"Jarvis: {msg_text}")
-                continue
+                    msg_text = "I'm sorry, I don't understand that command."
+                    if use_voice:
+                        voice_engine.speak(msg_text)
+                    else:
+                        print(f"Jarvis: {msg_text}")
+                    continue
 
             if needs_review:
                 msg_text = f"I'm not entirely sure, but I'll assume you meant '{predicted_intent}'."

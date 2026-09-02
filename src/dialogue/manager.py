@@ -13,6 +13,12 @@ class DialogueManager:
             "memory_query": ["topic"],
             "store_memory": ["fact"],
             "general_chat": [],
+            "calculate_math": ["expression"],
+            "get_time_date": [],
+            "get_weather": ["location"],
+            "web_search": ["query"],
+            "tell_joke": [],
+            "system_status": [],
             "clarification_response": []
         }
         
