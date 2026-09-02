@@ -1,8 +1,9 @@
 import datetime
 import webbrowser
 import psutil
-import random
 import urllib.parse
+import urllib.request
+import json
 
 def execute_time_date(slots):
     """Returns the current system time and date."""
@@ -12,13 +13,24 @@ def execute_time_date(slots):
     return {"status": "success", "message": f"It is currently {current_time} on {current_date}."}
 
 def execute_weather(slots):
-    """Mocks weather functionality (could be expanded to a real API)."""
-    location = slots.get("location", "your area")
-    # Mocked weather conditions
-    conditions = ["sunny", "cloudy", "raining", "snowing", "clear"]
-    temp = random.randint(40, 90)
-    cond = random.choice(conditions)
-    return {"status": "success", "message": f"The weather in {location} is {temp} degrees and {cond}."}
+    """Fetches real weather data from wttr.in."""
+    location = slots.get("location", "")
+    if not location:
+        return {"status": "error", "message": "I need a location to check the weather."}
+        
+    encoded_location = urllib.parse.quote(location)
+    url = f"https://wttr.in/{encoded_location}?format=3"
+    
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'curl/7.68.0'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            weather_data = response.read().decode('utf-8').strip()
+            if weather_data:
+                return {"status": "success", "message": f"The weather in {weather_data}."}
+            else:
+                return {"status": "error", "message": "Could not retrieve weather data."}
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to fetch weather: {e}"}
 
 def execute_web_search(slots):
     """Opens a web browser to search for a query."""
@@ -36,14 +48,17 @@ def execute_web_search(slots):
         return {"status": "error", "message": f"Failed to open browser: {e}"}
 
 def execute_joke(slots):
-    """Returns a random joke."""
-    jokes = [
-        "Why do programmers prefer dark mode? Because light attracts bugs.",
-        "There are 10 types of people in the world: those who understand binary, and those who don't.",
-        "Why did the developer go broke? Because he used up all his cache.",
-        "I would tell you a UDP joke, but you might not get it."
-    ]
-    return {"status": "success", "message": random.choice(jokes)}
+    """Fetches a real random joke from the Official Joke API."""
+    url = "https://official-joke-api.appspot.com/random_joke"
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            setup = data.get("setup", "")
+            punchline = data.get("punchline", "")
+            return {"status": "success", "message": f"{setup} ... {punchline}"}
+    except Exception as e:
+        return {"status": "error", "message": "I couldn't think of a joke right now."}
 
 def execute_system_status(slots):
     """Returns real system status using psutil."""
