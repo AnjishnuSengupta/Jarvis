@@ -36,7 +36,6 @@ class ToolDispatcher:
         
     def dispatch(self, intent, slots):
         if intent in self.tool_map:
-            print(f"  [Dispatcher] Executing tool for '{intent}' with args: {slots}")
             return self.tool_map[intent](slots)
         else:
             return {"status": "error", "message": f"No tool registered for intent: {intent}"}
