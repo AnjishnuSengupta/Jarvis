@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://media.giphy.com/media/26tn33aiTi1jIGsD6/giphy.gif" alt="Jarvis Banner" width="100%" style="border-radius: 10px;" />
+<img src="https://media.giphy.com/media/26tn33aiTi1jIGsD6/giphy.gif" alt="Jarvis Core Engine" width="100%" style="border-radius: 10px; max-width: 800px;" />
 
 # Jarvis NLU
 
@@ -8,7 +8,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/v0.0.0-3b82f6?style=flat-square&label=release)](#)
+[![Version](https://img.shields.io/badge/v0.0.1-3b82f6?style=flat-square&label=release)](#)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square&logo=python&logoColor=white)](#)
 [![NumPy](https://img.shields.io/badge/NumPy-Power-4d77cf?style=flat-square&logo=numpy&logoColor=white)](#)
 [![License](https://img.shields.io/badge/MIT-3b82f6?style=flat-square&label=license)](LICENSE)
@@ -18,7 +18,7 @@
 
 <kbd>[**Get Started**](#setup)</kbd>&nbsp;&nbsp;
 <kbd>[**How it Works**](#architecture-highlights)</kbd>&nbsp;&nbsp;
-<kbd>[**Future Plan**](#future-plan)</kbd>
+<kbd>[**Implemented Features**](#implemented-features)</kbd>
 
 <br/>
 
@@ -28,43 +28,54 @@
 
 <br/>
 
-Jarvis is a from-scratch classical Natural Language Understanding (NLU) assistant. **It uses NO pre-trained LLM models.** Everything is built from scratch using NumPy.
+Jarvis is a from-scratch classical Natural Language Understanding (NLU) assistant. **It uses NO pre-trained LLM models.** Everything is built from the ground up using NumPy.
 
 This project focuses on bounding the assistant to task-oriented commands rather than general open-ended conversations. By building the Tokenizer, TF-IDF Vectorizer, and Neural Network manually, we achieve rock-solid reliability on defined tasks like scheduling, code generation, and system control.
 
-## Features
+## Design Philosophy
 
-- **Zero Pretrained Weights:** Every part of the pipeline is initialized randomly and trained on synthetic/custom data.
-- **Lightweight & Fast:** Runs purely on CPU via NumPy matrix math. No heavy GPU requirements.
-- **Task-Oriented:** Highly reliable for specific intents compared to prompt-drifting LLMs.
+- **Zero Pretrained Weights:** Every part of the pipeline is initialized randomly and trained on synthetic and user-provided data.
+- **Lightweight & Fast:** Runs purely on the CPU via NumPy matrix operations. No GPU required.
+- **Task-Oriented Reliability:** Highly reliable for specific intents compared to prompt-drifting LLMs.
+- **Continuous Learning Loop:** Jarvis learns from user corrections and actively updates its own neural network.
 
 ---
 
 ## Architecture Highlights
 
-### 1. Tokenizer
+### 1. Custom Tokenizer
+A highly optimized tokenizer that lowercases text, strips punctuation, and builds a vocabulary dynamically. Handles out-of-vocabulary words flawlessly via an `<UNK>` fallback mechanism.
 
-Custom implementation that lowercases text, strips punctuation using regex, and splits tokens. It builds a vocabulary dynamically and handles out-of-vocabulary words with an `<UNK>` token.
-
-### 2. TF-IDF Vectorizer
-
-Hand-rolled TF-IDF implementation:
-
+### 2. Hand-rolled TF-IDF Vectorizer
+Vectorization implemented via core mathematical principles:
 - `tf(t, d) = count(t in d) / len(d)`
 - `idf(t) = log(N / (1 + df(t)))`
 
-### 3. Intent Classifier (Neural Network)
-
-A fully custom 2-layer Neural Network (`input -> hidden (128, ReLU) -> output (num_intents, softmax)`) built with NumPy.
-
+### 3. Neural Network Intent Classifier
+A custom 2-layer Neural Network (`input -> hidden (128, ReLU) -> output (num_intents, softmax)`) built with standard NumPy arrays.
 - **Forward Pass:** Explicit matrix multiplications.
-- **Loss:** Categorical Cross-Entropy.
-- **Backward Pass:** Manually derived gradients (no autograd used!).
+- **Loss Calculation:** Categorical Cross-Entropy.
+- **Backward Pass:** Manually derived gradients (no autograd dependencies).
 - **Optimizer:** Mini-batch SGD with momentum.
 
-### 4. Synthetic Data Generation
+### 4. Synthetic Data Bootstrapping
+Bypasses manual labeling by utilizing procedural template generation to bootstrap thousands of initial training samples.
 
-Uses template generators to bootstrap initial synthetic training data, bypassing the need for manual labeling of hundreds of examples.
+---
+
+## Implemented Features
+
+This project was built iteratively across 12 distinct phases. All core features are now fully functional:
+
+- **Entity Extraction:** A deterministic Sequence/Rule-based system for extracting temporal data, names, and parameters directly from text.
+- **Dialogue Manager:** Frame-based slot filling and state tracking to handle multi-turn conversations seamlessly.
+- **Automated Codegen Tool:** Deterministically scaffolds full projects (such as Vite/React applications) directly to the filesystem.
+- **Google Calendar Integration:** Schedules meetings via the Google Workspace API using OAuth2 authentication.
+- **System Control & Automation:** Interfaces directly with Linux subsystems to manage volume and execute core OS-level tasks.
+- **Active Learning Pipeline:** A dedicated `review.py` CLI module that allows developers to review low-confidence interactions, manually assign labels, and continuously retrain the network.
+- **Vector Memory Core:** An SQLite-backed facts store that leverages TF-IDF Cosine Similarity for robust memory retrieval over historical conversations.
+- **Voice I/O Engine:** Fully integrated offline Speech-to-Text (STT) and Text-to-Speech (TTS) capabilities for a hands-free interaction model.
+- **Desktop Shell API:** Exposes the core AI logic via a local Flask API and a beautifully crafted Tauri (React) GUI for desktop interactions.
 
 ---
 
@@ -77,43 +88,48 @@ Uses template generators to bootstrap initial synthetic training data, bypassing
    cd Jarvis
    ```
 
-2. **Create a virtual environment**
+2. **Initialize Environment**
 
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
-   ```
-
-3. **Install dependencies**
-
-   ```bash
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-4. **Generate Data & Train**
+3. **Bootstrap and Train the Model**
+
    ```bash
    python src/data/synthetic_generator.py
    python src/nlu/train.py
    ```
 
----
+## Usage
 
-## Future Plan
+### Option A: Standard CLI Mode
+Run Jarvis interactively in your terminal.
+```bash
+python jarvis.py
+```
 
-We have an extensive roadmap to turn this from a classification engine into a full-fledged local assistant:
+### Option B: Voice Mode
+Run Jarvis with the microphone and speaker enabled for a hands-free experience.
+```bash
+python jarvis.py --voice
+```
 
-- **Phase 4: Entity Extraction:** Build a rule-based system (upgrading to a Sequence Tagger/CRF later) for extracting dates, names, and parameters from text.
-- **Phase 5: Dialogue Manager:** Implement frame-based slot filling and state tracking to handle multi-turn conversations and clarifying questions.
-- **Phase 6: Codegen Tool:** Scaffold full projects (like Vite/React) deterministically.
-- **Phase 7: Google Calendar Integration:** Schedule real meetings via the Calendar API.
-- **Phase 8: System Control:** Cross-platform (Windows/Linux) Bluetooth and volume controls.
-- **Phase 9: Active Learning Loop:** A CLI tool to review low-confidence interactions, correct them, and continually retrain the network.
-- **Phase 10: Vector Memory:** SQLite facts store with TF-IDF retrieval over past conversations.
-- **Phase 11: Voice I/O Layer:** Offline STT (Speech-to-Text) and TTS (Text-to-Speech) for hands-free interactions.
-- **Phase 12: Desktop Shell:** Package into a standalone Tauri desktop app.
+### Option C: Desktop Application
+Start the background API server, and launch the Tauri React application.
+```bash
+# Terminal 1: Start Backend
+python server.py
+
+# Terminal 2: Start Desktop App
+cd ui
+npm run tauri dev
+```
 
 ---
 
 <div align="center">
-  <i>Built with ❤️ by Anjishnu Sengupta</i>
+  <i>Developed and engineered by Anjishnu Sengupta</i>
 </div>

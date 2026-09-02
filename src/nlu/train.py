@@ -6,9 +6,22 @@ from tokenizer import Tokenizer
 from vectorizer import TFIDFVectorizer
 from classifier import IntentClassifier
 
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 def load_data(path="data/synthetic_dataset.json"):
     with open(path, "r") as f:
         data = json.load(f)
+    
+    # Also load reviewed data from SQLite if available
+    try:
+        from src.data.logger import get_all_reviewed_data
+        reviewed_data = get_all_reviewed_data()
+        data.extend(reviewed_data)
+        print(f"Loaded {len(reviewed_data)} reviewed interactions from database.")
+    except Exception as e:
+        print(f"Note: Could not load DB interactions: {e}")
+        
     texts = [item["text"] for item in data]
     labels = [item["intent"] for item in data]
     return texts, labels
