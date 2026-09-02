@@ -60,3 +60,7 @@ class DialogueManager:
         self.filled_slots = {}
         
         return final_intent, final_slots, True, None
+
+    def reset(self):
+        self.pending_intent = None
+        self.filled_slots = {}

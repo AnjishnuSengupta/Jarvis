@@ -80,6 +80,10 @@ def chat():
     
     if not user_input.strip():
         return jsonify({"response": "Please say something."})
+
+    if dialogue_manager.pending_intent and user_input.lower() in ["cancel", "stop", "nevermind", "leave it", "abort", "quit"]:
+        dialogue_manager.reset()
+        return jsonify({"response": "Okay, cancelled."})
         
     # Vectorize
     X = vectorizer.transform([user_input])
@@ -99,6 +103,7 @@ def chat():
     if confidence < 0.35:
         if dialogue_manager.pending_intent:
             predicted_intent = "clarification_response"
+            extracted_slots = extractor.extract_entities(user_input, predicted_intent)
         else:
             return jsonify({"response": "I'm sorry, I don't understand that command."})
 

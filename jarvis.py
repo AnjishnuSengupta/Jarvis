@@ -84,6 +84,13 @@ def main():
             if not user_input.strip():
                 continue
                 
+            if dialogue_manager.pending_intent and user_input.lower() in ["cancel", "stop", "nevermind", "leave it", "abort", "quit"]:
+                dialogue_manager.reset()
+                msg = "Okay, cancelled."
+                if use_voice: voice_engine.speak(msg)
+                else: print(f"Jarvis: {msg}")
+                continue
+                
             # Vectorize
             X = vectorizer.transform([user_input])
             
@@ -103,6 +110,7 @@ def main():
             if confidence < 0.35:
                 if dialogue_manager.pending_intent:
                     predicted_intent = "clarification_response"
+                    extracted_slots = extractor.extract_entities(user_input, predicted_intent)
                 else:
                     msg_text = "I'm sorry, I don't understand that command."
                     if use_voice:
