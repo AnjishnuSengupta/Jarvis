@@ -137,6 +137,24 @@ class EntityExtractor:
             if match:
                 slots["fact"] = match.group(1).strip()
                 
+        elif intent == "calculate_math":
+            match = re.search(r'(?:is|calculate|solve|much is)\s+([0-9a-zA-Z+\-*/.\s]+)\??$', text.lower())
+            if match:
+                slots["expression"] = match.group(1).strip()
+            else:
+                # If no keyword, assume the whole text is the expression except maybe "?"
+                slots["expression"] = text.lower().replace("?", "").strip()
+                
+        elif intent == "get_weather":
+            match = re.search(r'(?:in|for)\s+([a-zA-Z\s]+)\??$', text.lower())
+            if match:
+                slots["location"] = match.group(1).strip()
+                
+        elif intent == "web_search":
+            match = re.search(r'(?:for|about|google|up)\s+(.*)', text.lower())
+            if match:
+                slots["query"] = match.group(1).strip()
+                
         elif intent == "clarification_response":
             # Could be a time, a name, a device, etc.
             # Try all extractions
