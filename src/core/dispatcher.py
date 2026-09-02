@@ -5,6 +5,7 @@ from src.tools.bluetooth import execute_bluetooth_control
 from src.tools.memory import execute_memory_store, execute_memory_query
 from src.tools.calendar import execute_schedule_meeting
 from src.tools.calculator import evaluate_math
+from src.tools.utilities import execute_time_date, execute_weather, execute_web_search, execute_joke, execute_system_status
 
 def file_operation_tool(slots):
     filename = slots.get("filename", "file")
@@ -26,6 +27,11 @@ class ToolDispatcher:
             "store_memory": execute_memory_store,
             "general_chat": general_chat_tool,
             "calculate_math": evaluate_math,
+            "get_time_date": execute_time_date,
+            "get_weather": execute_weather,
+            "web_search": execute_web_search,
+            "tell_joke": execute_joke,
+            "system_status": execute_system_status,
         }
         
     def dispatch(self, intent, slots):

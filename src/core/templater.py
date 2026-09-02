@@ -43,6 +43,21 @@ class ResponseTemplater:
                 "The answer is {result}.",
                 "{result}",
                 "That would be {result}."
+            ],
+            "get_time_date": [
+                "{message}"
+            ],
+            "get_weather": [
+                "{message}"
+            ],
+            "web_search": [
+                "{message}"
+            ],
+            "tell_joke": [
+                "{message}"
+            ],
+            "system_status": [
+                "{message}"
             ]
         }
         
@@ -79,6 +94,12 @@ class ResponseTemplater:
             "expression": [
                 "What would you like me to calculate?",
                 "What is the mathematical expression?"
+            ],
+            "location": [
+                "Which location should I check the weather for?"
+            ],
+            "query": [
+                "What would you like me to search for?"
             ]
         }
 

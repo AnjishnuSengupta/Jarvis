@@ -121,6 +121,61 @@ INTENTS = {
             "expression": ["2+2", "5 * 10", "100 / 4", "3 + 7", "10-2", "8 times 8", "12 divided by 3", "20 + 30 - 5"]
         }
     },
+    "get_time_date": {
+        "templates": [
+            "what time is it?",
+            "what is the time?",
+            "tell me the time",
+            "what is today's date?",
+            "what is the date today?",
+            "what day is it?"
+        ],
+        "slots": {}
+    },
+    "get_weather": {
+        "templates": [
+            "what is the weather like in {location}?",
+            "tell me the weather for {location}",
+            "is it going to rain in {location}?",
+            "weather in {location}",
+            "what's the temperature in {location}?"
+        ],
+        "slots": {
+            "location": ["London", "New York", "Tokyo", "Paris", "my city", "San Francisco"]
+        }
+    },
+    "web_search": {
+        "templates": [
+            "search the web for {query}",
+            "google {query}",
+            "look up {query}",
+            "find information about {query}",
+            "can you search for {query}?"
+        ],
+        "slots": {
+            "query": ["python tutorials", "how to tie a tie", "latest news", "best restaurants nearby", "cute cat videos"]
+        }
+    },
+    "tell_joke": {
+        "templates": [
+            "tell me a joke",
+            "say something funny",
+            "make me laugh",
+            "do you know any jokes?",
+            "tell a joke"
+        ],
+        "slots": {}
+    },
+    "system_status": {
+        "templates": [
+            "how is your cpu usage?",
+            "what is my battery level?",
+            "how much memory is being used?",
+            "check system status",
+            "are we running hot?"
+        ],
+        "slots": {}
+    },
     "clarification_response": {
         "templates": [
             "it is {value}",
