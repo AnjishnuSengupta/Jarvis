@@ -1,6 +1,7 @@
 import sys
 import json
 import numpy as np
+import readline
 
 from src.nlu.tokenizer import Tokenizer
 from src.nlu.vectorizer import TFIDFVectorizer
