@@ -38,6 +38,11 @@ class ResponseTemplater:
             "general_chat": [
                 "{message}",
                 "I am Jarvis. {message}"
+            ],
+            "calculate_math": [
+                "The answer is {result}.",
+                "{result}",
+                "That would be {result}."
             ]
         }
         
@@ -70,6 +75,10 @@ class ResponseTemplater:
             ],
             "fact": [
                 "What should I remember?"
+            ],
+            "expression": [
+                "What would you like me to calculate?",
+                "What is the mathematical expression?"
             ]
         }
 

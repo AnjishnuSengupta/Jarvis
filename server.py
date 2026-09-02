@@ -96,6 +96,9 @@ def chat():
     # Log Interaction
     needs_review = log_interaction(user_input, predicted_intent, float(confidence), extracted_slots)
     
+    if confidence < 0.35:
+        return jsonify({"response": "I'm sorry, I don't understand that command."})
+
     response_prefix = ""
     if needs_review:
         response_prefix = f"[Low Confidence: {confidence:.2f}]: I'm not entirely sure, but I'll assume you meant '{predicted_intent}'. "

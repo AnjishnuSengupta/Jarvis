@@ -108,6 +108,19 @@ INTENTS = {
         ],
         "slots": {}
     },
+    "calculate_math": {
+        "templates": [
+            "what is {expression}?",
+            "solve {expression}",
+            "calculate {expression}",
+            "{expression}",
+            "how much is {expression}?",
+            "can you calculate {expression}"
+        ],
+        "slots": {
+            "expression": ["2+2", "5 * 10", "100 / 4", "3 + 7", "10-2", "8 times 8", "12 divided by 3", "20 + 30 - 5"]
+        }
+    },
     "clarification_response": {
         "templates": [
             "it is {value}",

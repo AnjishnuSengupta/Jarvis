@@ -4,6 +4,7 @@ from src.tools.system import execute_system_control
 from src.tools.bluetooth import execute_bluetooth_control
 from src.tools.memory import execute_memory_store, execute_memory_query
 from src.tools.calendar import execute_schedule_meeting
+from src.tools.calculator import evaluate_math
 
 def file_operation_tool(slots):
     filename = slots.get("filename", "file")
@@ -24,6 +25,7 @@ class ToolDispatcher:
             "memory_query": execute_memory_query,
             "store_memory": execute_memory_store,
             "general_chat": general_chat_tool,
+            "calculate_math": evaluate_math,
         }
         
     def dispatch(self, intent, slots):

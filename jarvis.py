@@ -99,6 +99,14 @@ def main():
             from src.data.logger import log_interaction
             needs_review = log_interaction(user_input, predicted_intent, float(confidence), extracted_slots)
             
+            if confidence < 0.35:
+                msg_text = "I'm sorry, I don't understand that command."
+                if use_voice:
+                    voice_engine.speak(msg_text)
+                else:
+                    print(f"Jarvis: {msg_text}")
+                continue
+
             if needs_review:
                 msg_text = f"I'm not entirely sure, but I'll assume you meant '{predicted_intent}'."
                 if use_voice:
