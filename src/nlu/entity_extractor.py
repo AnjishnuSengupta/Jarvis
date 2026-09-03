@@ -122,6 +122,15 @@ class EntityExtractor:
             if folder_match:
                 slots["folder"] = folder_match.group(1).strip()
                 
+            action_match = re.search(r'\b(create|make|delete|remove|move|read|find|search)\b', text.lower())
+            if action_match:
+                action = action_match.group(1)
+                if action in ["create", "make"]: slots["action"] = "create"
+                elif action in ["delete", "remove"]: slots["action"] = "delete"
+                elif action in ["move"]: slots["action"] = "move"
+                elif action in ["read"]: slots["action"] = "read"
+                elif action in ["find", "search"]: slots["action"] = "find"
+                
         elif intent == "system_control":
             match = re.search(r'(?:to|at)\s+([a-zA-Z0-9%]+)', text.lower())
             if match:

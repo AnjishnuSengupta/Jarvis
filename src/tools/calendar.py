@@ -30,26 +30,34 @@ def get_calendar_service():
     service = build('calendar', 'v3', credentials=creds)
     return service
 
+DEFAULT_MEETING_MINUTES = 60
+
 def execute_schedule_meeting(slots):
-    name = slots.get("name", "someone")
-    dt = slots.get("time", "sometime")
+    name = slots.get("name", "")
+    dt_str = slots.get("time", "")
     
-    if not name or not dt:
+    if not name or not dt_str:
         return {"status": "error", "message": "Missing name or time for the meeting."}
         
     try:
+        # The entity extractor should provide an ISO format datetime
+        try:
+            start_dt = datetime.datetime.fromisoformat(dt_str)
+        except ValueError:
+            return {"status": "error", "message": "I couldn't understand that time format. Could you please specify the time again?"}
+            
+        now = datetime.datetime.now()
+        if start_dt < now:
+            return {"status": "error", "message": "That time is in the past! Please provide a future time."}
+            
         service = get_calendar_service()
         
-        # In a real assistant, you would parse `dt` (e.g. "tomorrow 4pm") into an ISO format datetime.
-        # Since we are keeping it simple, we will just use the current time + 1 hour as a placeholder,
-        # but put the original request in the description.
-        now = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-        start_time = now.isoformat() + 'Z'
-        end_time = (now + datetime.timedelta(hours=1)).isoformat() + 'Z'
+        start_time = start_dt.isoformat() + 'Z'
+        end_time = (start_dt + datetime.timedelta(minutes=DEFAULT_MEETING_MINUTES)).isoformat() + 'Z'
         
         event = {
             'summary': f'Meeting with {name}',
-            'description': f'Scheduled by Jarvis for: {dt}',
+            'description': f'Scheduled by Jarvis',
             'start': {
                 'dateTime': start_time,
                 'timeZone': 'UTC',
@@ -77,9 +85,9 @@ def execute_schedule_meeting(slots):
         
         return {
             "status": "success", 
-            "message": f"Event created with {name} at {dt}. Meet link: {meet_link}",
+            "message": f"Event created with {name} at {start_dt.strftime('%A, %B %d at %I:%M %p')}. Meet link: {meet_link}",
             "name": name,
-            "time": dt,
+            "time": dt_str,
             "link": meet_link
         }
         

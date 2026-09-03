@@ -100,6 +100,15 @@ class ResponseTemplater:
             ],
             "query": [
                 "What would you like me to search for?"
+            ],
+            "action": [
+                "What would you like me to do with the file? (create, read, delete, move, or find)"
+            ],
+            "folder": [
+                "Which folder should I move it to?"
+            ],
+            "confirmed": [
+                "Are you absolutely sure you want to proceed with this file operation? (yes/no)"
             ]
         }
 

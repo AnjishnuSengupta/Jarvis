@@ -9,7 +9,7 @@ class DialogueManager:
             "write_code": ["project_type"],
             "bluetooth_control": ["device"],
             "system_control": ["level"],
-            "file_operation": ["filename"],
+            "file_operation": ["action", "filename"],
             "memory_query": ["topic"],
             "store_memory": ["fact"],
             "general_chat": [],
@@ -48,8 +48,23 @@ class DialogueManager:
             
         missing_slots = [slot for slot in self.intent_schema[intent] if slot not in self.filled_slots]
         
+        # Dynamic requirement: if file_operation is move, we also need folder
+        if intent == "file_operation" and self.filled_slots.get("action") == "move" and "folder" not in self.filled_slots:
+            missing_slots.append("folder")
+            
         if missing_slots:
             return intent, self.filled_slots, False, missing_slots[0]
+            
+        # Confirmation logic for destructive actions
+        if intent == "file_operation" and self.filled_slots.get("action") in ["delete", "move"]:
+            if "confirmed" not in self.filled_slots:
+                # Ask for confirmation
+                self.pending_intent = intent
+                return intent, self.filled_slots, False, "confirmed"
+            elif self.filled_slots["confirmed"].lower() not in ["yes", "y", "sure", "ok", "do it"]:
+                # They didn't confirm
+                self.reset()
+                return "general_chat", {}, True, "Operation cancelled."
             
         # All required slots filled
         final_intent = self.pending_intent
