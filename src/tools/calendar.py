@@ -47,13 +47,19 @@ def execute_schedule_meeting(slots):
             return {"status": "error", "message": "I couldn't understand that time format. Could you please specify the time again?"}
             
         now = datetime.datetime.now()
-        if start_dt < now:
+        if start_dt.tzinfo is None:
+            start_dt = start_dt.replace(tzinfo=datetime.timezone.utc)
+            
+        if start_dt < datetime.datetime.now(datetime.timezone.utc):
             return {"status": "error", "message": "That time is in the past! Please provide a future time."}
             
         service = get_calendar_service()
         
-        start_time = start_dt.isoformat() + 'Z'
-        end_time = (start_dt + datetime.timedelta(minutes=DEFAULT_MEETING_MINUTES)).isoformat() + 'Z'
+        start_dt_utc = start_dt.astimezone(datetime.timezone.utc)
+        end_dt_utc = (start_dt + datetime.timedelta(minutes=DEFAULT_MEETING_MINUTES)).astimezone(datetime.timezone.utc)
+        
+        start_time = start_dt_utc.isoformat().replace('+00:00', 'Z')
+        end_time = end_dt_utc.isoformat().replace('+00:00', 'Z')
         
         event = {
             'summary': f'Meeting with {name}',

@@ -1,10 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
   const [messages, setMessages] = useState([{ text: "Hello! I am Jarvis.", sender: "bot" }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/api/notifications");
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -34,6 +51,15 @@ function App() {
 
   return (
     <div className="container">
+      {notifications.length > 0 && (
+        <div className="notifications-overlay">
+          {notifications.map((note, idx) => (
+            <div key={idx} className="notification-toast">
+              🚨 {note}
+            </div>
+          ))}
+        </div>
+      )}
       <div className="chat-window">
         {messages.map((msg, idx) => (
           <div key={idx} className={`message-bubble ${msg.sender}`}>

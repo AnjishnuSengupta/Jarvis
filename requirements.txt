@@ -10,3 +10,6 @@ google-auth-httplib2
 google-auth-oauthlib
 psutil
 vosk
+pycaw; sys_platform == 'win32'
+wmi; sys_platform == 'win32'
+comtypes; sys_platform == 'win32'

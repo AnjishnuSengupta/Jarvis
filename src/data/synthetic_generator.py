@@ -1,7 +1,30 @@
 import json
 import random
 import os
+import re
 from pathlib import Path
+
+random.seed(42)
+
+def introduce_noise(text):
+    """Introduces realistic typos and punctuation dropping."""
+    if random.random() < 0.2:
+        # drop punctuation
+        text = text.replace('?', '').replace('.', '').replace(',', '')
+    if random.random() < 0.1:
+        # simulate typo
+        typos = {
+            "schedule": "schdule",
+            "bluetooth": "blutooth",
+            "turn": "trun",
+            "meeting": "meting",
+            "tomorrow": "tomorow"
+        }
+        for word, typo in typos.items():
+            if word in text.lower():
+                text = re.sub(rf'\b{word}\b', typo, text, flags=re.IGNORECASE)
+                break
+    return text
 
 INTENTS = {
     "schedule_meeting": {
@@ -11,7 +34,8 @@ INTENTS = {
             "set up a call with {name} for {time}",
             "can you schedule a meeting {time} with {name}",
             "create an event with {name} {time}",
-            "meeting with {name} {time}"
+            "meeting with {name} {time}",
+            "schedule a meeting with {name} {time} and turn on bluetooth"
         ],
         "slots": {
             "name": ["Raj", "Alice", "Bob", "Charlie", "Dave", "Eve", "my manager", "the team", "John", "Sarah"],
@@ -51,10 +75,14 @@ INTENTS = {
             "turn the volume up",
             "set brightness to {level}",
             "put the computer to sleep",
-            "check battery level"
+            "check battery level",
+            "suspend the system",
+            "make the screen brighter",
+            "lower the volume to {level}",
+            "lock my pc"
         ],
         "slots": {
-            "level": ["maximum", "50%", "low", "high", "100 percent"]
+            "level": ["maximum", "50%", "low", "high", "100 percent", "75%"]
         }
     },
     "file_operation": {
@@ -63,11 +91,15 @@ INTENTS = {
             "delete {filename}",
             "move {filename} to {folder}",
             "read the contents of {filename}",
-            "find the file named {filename}"
+            "find the file named {filename}",
+            "make a file named {filename}",
+            "remove {filename}",
+            "where is {filename} located?",
+            "what is inside {filename}?"
         ],
         "slots": {
-            "filename": ["notes.txt", "report.pdf", "main.py", "index.html", "the document", "my resume"],
-            "folder": ["desktop", "documents", "downloads", "the archive"]
+            "filename": ["notes.txt", "report.pdf", "main.py", "index.html", "the document", "my resume", "test.py"],
+            "folder": ["desktop", "documents", "downloads", "the archive", "home folder"]
         }
     },
     "memory_query": {
@@ -115,7 +147,8 @@ INTENTS = {
             "calculate {expression}",
             "{expression}",
             "how much is {expression}?",
-            "can you calculate {expression}"
+            "can you calculate {expression}",
+            "tell me what is {expression}"
         ],
         "slots": {
             "expression": ["2+2", "5 * 10", "100 / 4", "3 + 7", "10-2", "8 times 8", "12 divided by 3", "20 + 30 - 5"]
@@ -138,7 +171,9 @@ INTENTS = {
             "tell me the weather for {location}",
             "is it going to rain in {location}?",
             "weather in {location}",
-            "what's the temperature in {location}?"
+            "what's the temperature in {location}?",
+            "what is the weather in {location}?",
+            "is it raining in {location}?"
         ],
         "slots": {
             "location": ["London", "New York", "Tokyo", "Paris", "my city", "San Francisco"]
@@ -150,7 +185,8 @@ INTENTS = {
             "google {query}",
             "look up {query}",
             "find information about {query}",
-            "can you search for {query}?"
+            "can you search for {query}?",
+            "search for {query}"
         ],
         "slots": {
             "query": ["python tutorials", "how to tie a tie", "latest news", "best restaurants nearby", "cute cat videos"]
@@ -182,11 +218,37 @@ INTENTS = {
             "the value is {value}",
             "I meant {value}",
             "{value}",
-            "let's go with {value}"
+            "let's go with {value}",
+            "yes",
+            "y",
+            "sure",
+            "ok",
+            "do it"
         ],
         "slots": {
-            "value": ["tomorrow", "Raj", "4pm", "a React app", "my AirPods", "notes.txt"]
+            "value": ["tomorrow", "Raj", "4pm", "a React app", "my AirPods", "notes.txt", "yes", "no"]
         }
+    },
+    "operation_cancelled": {
+        "templates": [
+            "cancel that",
+            "stop",
+            "abort",
+            "nevermind",
+            "no",
+            "don't do it",
+            "cancel",
+            "quit",
+            "exit",
+            "no thanks",
+            "forget it",
+            "no wait",
+            "actually don't",
+            "never mind",
+            "no cancel that",
+            "wait stop"
+        ],
+        "slots": {}
     }
 }
 
@@ -208,6 +270,7 @@ def generate_examples(intent_name, intent_data, num_examples=200):
                 example_str = example_str.replace(slot_token, chosen_value)
                 
         # Optional: sometimes add random noise like punctuation or typos? Keep it clean for now.
+        example_str = introduce_noise(example_str)
         
         examples.append({
             "text": example_str,

@@ -1,15 +1,7 @@
 import subprocess
 import time
 
-# Mock dictionary mapping device names to MAC addresses
-DEVICE_MAC_MAP = {
-    "airpods": "XX:XX:XX:XX:XX:X1",
-    "headphones": "XX:XX:XX:XX:XX:X2",
-    "sony wh-1000xm4": "XX:XX:XX:XX:XX:X3",
-    "speaker": "XX:XX:XX:XX:XX:X4",
-    "keyboard": "XX:XX:XX:XX:XX:X5",
-    "mouse": "XX:XX:XX:XX:XX:X6"
-}
+import platform
 
 def execute_bluetooth_control(slots):
     device = slots.get("device", "").lower()
@@ -23,26 +15,45 @@ def execute_bluetooth_control(slots):
         except Exception:
             return {"status": "error", "message": "Failed to power on Bluetooth."}
             
-    mac_address = DEVICE_MAC_MAP.get(device)
+    # Platform checks
+    current_os = platform.system()
     
-    if not mac_address:
-        return {"status": "error", "message": f"Device '{device}' not found in paired devices list."}
+    if current_os == "Windows":
+        return {"status": "error", "message": "Connecting to Bluetooth audio devices on Windows via script is unstable. Please use the Windows Settings app to connect."}
+        
+    if current_os != "Linux":
+        return {"status": "error", "message": f"Bluetooth control not supported on {current_os}."}
         
     try:
-        print(f"  [Bluetooth] Powering on adapter and connecting to {device} ({mac_address})...")
+        # Discover real MAC by matching name against paired devices
+        result = subprocess.run(["bluetoothctl", "devices", "Paired"], capture_output=True, text=True, check=True)
+        lines = result.stdout.strip().split('\n')
         
-        # Ensure bluetooth is on
+        mac_address = None
+        for line in lines:
+            if not line.startswith("Device"): continue
+            parts = line.split(" ", 2)
+            if len(parts) < 3: continue
+            
+            mac = parts[1]
+            name = parts[2].lower()
+            
+            # Simple substring matching for "airpods" in "Anjishnu's AirPods"
+            if device in name:
+                mac_address = mac
+                break
+                
+        if not mac_address:
+            return {"status": "error", "message": f"Device '{device}' not found in paired devices list."}
+            
+        print(f"  [Bluetooth] Powering on adapter and connecting to {device} ({mac_address})...")
         subprocess.run(["bluetoothctl", "power", "on"], check=True, stdout=subprocess.DEVNULL)
         time.sleep(1)
         
         # Connect
-        # Run bluetoothctl connect command
-        result = subprocess.run(["bluetoothctl", "connect", mac_address], capture_output=True, text=True)
-        
-        # If we hit an error because this is a mock MAC, we'll pretend it worked for the sake of the demo
-        # or report the error. Since we are using mock MACs, it will definitely fail in real life.
-        if result.returncode != 0 and "not available" in result.stderr.lower():
-            pass
+        conn_result = subprocess.run(["bluetoothctl", "connect", mac_address], capture_output=True, text=True)
+        if conn_result.returncode != 0:
+            return {"status": "error", "message": f"Failed to connect: {conn_result.stderr.strip()}"}
             
         return {"status": "success", "message": f"Connection command sent to {device}.", "device": device}
         

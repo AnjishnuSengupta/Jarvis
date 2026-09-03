@@ -5,10 +5,14 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.data.logger import get_flagged_interactions, update_interaction
+from src.dialogue.manager import DialogueManager
 
 def main():
     print("=== Jarvis Active Learning Review ===")
     flagged = get_flagged_interactions()
+    
+    dm = DialogueManager()
+    trained_intents = list(dm.intent_schema.keys())
     
     if not flagged:
         print("No flagged interactions require review. Jarvis is confident!")
@@ -22,37 +26,27 @@ def main():
         print(f"Text: '{raw_text}'")
         print(f"Predicted Intent: {predicted_intent} (Confidence: {confidence:.2f})")
         print("\nAvailable Intents:")
-        print("1. schedule_meeting     2. write_code           3. bluetooth_control")
-        print("4. system_control       5. file_operation       6. memory_query")
-        print("7. general_chat         8. clarification_response")
-        print("9. [Skip / Was Correct]")
+        for i, intent in enumerate(trained_intents, 1):
+            print(f"{i}. {intent}")
+            
+        skip_idx = len(trained_intents) + 1
+        print(f"{skip_idx}. [Skip / Was Correct]")
         
         while True:
             try:
-                choice = int(input("\nEnter correct intent number (1-9): "))
-                if 1 <= choice <= 9:
+                choice = int(input(f"\nEnter correct intent number (1-{skip_idx}): "))
+                if 1 <= choice <= skip_idx:
                     break
                 print("Invalid choice.")
             except ValueError:
                 print("Please enter a number.")
                 
-        intents_map = {
-            1: "schedule_meeting",
-            2: "write_code",
-            3: "bluetooth_control",
-            4: "system_control",
-            5: "file_operation",
-            6: "memory_query",
-            7: "general_chat",
-            8: "clarification_response"
-        }
-        
-        if choice == 9:
+        if choice == skip_idx:
             # It was actually correct, just low confidence
             correct_intent = predicted_intent
             print("Marked as correct.")
         else:
-            correct_intent = intents_map[choice]
+            correct_intent = trained_intents[choice - 1]
             print(f"Corrected to: {correct_intent}")
             
         update_interaction(interaction_id, correct_intent)

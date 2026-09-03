@@ -8,7 +8,7 @@ class DialogueManager:
             "schedule_meeting": ["name", "time"],
             "write_code": ["project_type"],
             "bluetooth_control": ["device"],
-            "system_control": ["level"],
+            "system_control": ["action"],
             "file_operation": ["action", "filename"],
             "memory_query": ["topic"],
             "store_memory": ["fact"],
@@ -19,8 +19,29 @@ class DialogueManager:
             "web_search": ["query"],
             "tell_joke": [],
             "system_status": [],
-            "clarification_response": []
+            "clarification_response": [],
+            "operation_cancelled": []
         }
+        
+    def get_missing_slots(self, intent, filled_slots):
+        if intent not in self.intent_schema:
+            return []
+            
+        required = self.intent_schema[intent].copy()
+        
+        # Dynamic requirement: if system_control is volume/brightness, we also need level
+        if intent == "system_control" and filled_slots.get("action") in ["volume", "brightness"]:
+            required.append("level")
+            
+        # Dynamic requirement: if file_operation is move, we also need folder
+        if intent == "file_operation" and filled_slots.get("action") == "move":
+            required.append("folder")
+            
+        # Confirmation logic for destructive actions
+        if intent == "file_operation" and filled_slots.get("action") in ["delete", "move"]:
+            required.append("confirmed")
+            
+        return [slot for slot in required if slot not in filled_slots]
         
     def process_turn(self, predicted_intent, extracted_slots):
         # If we have a pending intent, and we receive a clarification response,
@@ -32,7 +53,7 @@ class DialogueManager:
             for k, v in extracted_slots.items():
                 if k == "value":
                     # Find the first missing slot and assign this generic value
-                    missing_slots = [slot for slot in self.intent_schema[intent] if slot not in self.filled_slots]
+                    missing_slots = self.get_missing_slots(intent, self.filled_slots)
                     if missing_slots:
                         self.filled_slots[missing_slots[0]] = v
                 else:
@@ -46,25 +67,21 @@ class DialogueManager:
         if intent not in self.intent_schema:
             return intent, self.filled_slots, True, "Unknown intent schema."
             
-        missing_slots = [slot for slot in self.intent_schema[intent] if slot not in self.filled_slots]
-        
-        # Dynamic requirement: if file_operation is move, we also need folder
-        if intent == "file_operation" and self.filled_slots.get("action") == "move" and "folder" not in self.filled_slots:
-            missing_slots.append("folder")
+        missing_slots = self.get_missing_slots(intent, self.filled_slots)
             
         if missing_slots:
-            return intent, self.filled_slots, False, missing_slots[0]
-            
-        # Confirmation logic for destructive actions
-        if intent == "file_operation" and self.filled_slots.get("action") in ["delete", "move"]:
-            if "confirmed" not in self.filled_slots:
-                # Ask for confirmation
+            # Special check for confirmation
+            if missing_slots[0] == "confirmed":
                 self.pending_intent = intent
                 return intent, self.filled_slots, False, "confirmed"
-            elif self.filled_slots["confirmed"].lower() not in ["yes", "y", "sure", "ok", "do it"]:
-                # They didn't confirm
+                
+            return intent, self.filled_slots, False, missing_slots[0]
+            
+        # If confirmed slot is present but not positive
+        if intent == "file_operation" and self.filled_slots.get("action") in ["delete", "move"]:
+            if self.filled_slots.get("confirmed", "").lower() not in ["yes", "y", "sure", "ok", "do it"]:
                 self.reset()
-                return "general_chat", {}, True, "Operation cancelled."
+                return "operation_cancelled", {}, True, "Operation cancelled."
             
         # All required slots filled
         final_intent = self.pending_intent

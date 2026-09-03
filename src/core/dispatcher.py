@@ -38,6 +38,7 @@ class ToolDispatcher:
             "web_search": execute_web_search,
             "tell_joke": execute_joke,
             "system_status": execute_system_status,
+            "operation_cancelled": lambda slots: {"status": "success", "message": "Operation cancelled."},
         }
         
     def dispatch(self, intent, slots):

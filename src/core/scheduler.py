@@ -3,14 +3,25 @@ import time
 import threading
 import sqlite3
 import os
+import datetime
+from src.tools.calendar import get_calendar_service
 
 DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "jarvis.db"))
 
+CURRENT_NOTIFICATIONS = []
+
+def get_current_notifications():
+    """Returns the most recent notifications list."""
+    return CURRENT_NOTIFICATIONS
+
 def proactive_check():
     """A proactive check that runs periodically."""
+    global CURRENT_NOTIFICATIONS
     print("\n  [Scheduler] Running proactive checks...")
     
-    # Example: Check if there are unreviewed flagged interactions
+    new_notifications = []
+    
+    # 1. Check if there are unreviewed flagged interactions
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -19,10 +30,36 @@ def proactive_check():
         conn.close()
         
         if count > 0:
-            print(f"  [Scheduler] Alert: {count} interaction(s) need your review! Run `python review.py`.")
-            # In a full desktop app, this could send a notification to the UI via a WebSocket
+            msg = f"{count} interaction(s) need your review! Run `python review.py`."
+            new_notifications.append(msg)
+            print(f"  [Scheduler] Alert: {msg}")
     except Exception as e:
         print(f"  [Scheduler] Failed to check database: {e}")
+        
+    # 2. Check for upcoming calendar events in the next 15 minutes
+    try:
+        service = get_calendar_service()
+        now = datetime.datetime.now(datetime.timezone.utc)
+        in_15_mins = now + datetime.timedelta(minutes=15)
+        
+        timeMin = now.isoformat().replace('+00:00', 'Z')
+        timeMax = in_15_mins.isoformat().replace('+00:00', 'Z')
+        
+        events_result = service.events().list(calendarId='primary', timeMin=timeMin,
+                                            timeMax=timeMax, singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        
+        for event in events:
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            summary = event.get('summary', 'Meeting')
+            msg = f"Upcoming: '{summary}' starting soon."
+            new_notifications.append(msg)
+            print(f"  [Scheduler] Alert: {msg}")
+    except Exception as e:
+        print(f"  [Scheduler] Failed to check calendar: {e}")
+        
+    CURRENT_NOTIFICATIONS = new_notifications
 
 def run_scheduler():
     """Runs the scheduling loop in a background thread."""

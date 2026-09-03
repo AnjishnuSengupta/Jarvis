@@ -1,0 +1,13 @@
+import React from 'react';
+import './App.css';
+{{IMPORTS}}
+
+function App() {
+  return (
+    <div className="App" style={{ fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+{{SECTIONS}}
+    </div>
+  );
+}
+
+export default App;

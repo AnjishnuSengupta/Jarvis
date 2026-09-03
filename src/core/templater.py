@@ -9,7 +9,9 @@ class ResponseTemplater:
                 "Done! Your calendar now has an event with {name} for {time}."
             ],
             "write_code": [
-                "I've scaffolded a new {project_type} project for you.",
+                "Your {project_type} is ready and running at {url}.",
+                "I've scaffolded a new {project_type} project for you. Access it here: {url}.",
+                "Done scaffolding the {project_type}. The local server is running at {url}.",
                 "Your {project_type} is ready.",
                 "Done scaffolding the {project_type}."
             ],
@@ -58,6 +60,11 @@ class ResponseTemplater:
             ],
             "system_status": [
                 "{message}"
+            ],
+            "operation_cancelled": [
+                "Operation cancelled.",
+                "Okay, I won't do that.",
+                "Cancelled."
             ]
         }
         

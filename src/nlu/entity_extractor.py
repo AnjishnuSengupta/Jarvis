@@ -19,7 +19,7 @@ class EntityExtractor:
         Custom date parser using regex. Resolves relative dates to absolute datetimes.
         """
         text = text.lower()
-        now = datetime.datetime.now()
+        now = datetime.datetime.now().astimezone()
         
         # Match "tomorrow"
         if re.search(r'\btomorrow\b', text):
@@ -114,14 +114,6 @@ class EntityExtractor:
                 slots["project_type"] = match.group(1).strip()
                 
         elif intent == "file_operation":
-            match = re.search(r'(?:called|named|of)\s+([a-zA-Z0-9_\-\.]+)', text.lower())
-            if match:
-                slots["filename"] = match.group(1).strip()
-                
-            folder_match = re.search(r'to\s+(?:the\s+)?([a-zA-Z0-9_]+)', text.lower())
-            if folder_match:
-                slots["folder"] = folder_match.group(1).strip()
-                
             action_match = re.search(r'\b(create|make|delete|remove|move|read|find|search)\b', text.lower())
             if action_match:
                 action = action_match.group(1)
@@ -131,7 +123,30 @@ class EntityExtractor:
                 elif action in ["read"]: slots["action"] = "read"
                 elif action in ["find", "search"]: slots["action"] = "find"
                 
+            # Filename extraction
+            match = re.search(r'(?:called|named|of)\s+([a-zA-Z0-9_\-\.]+)', text.lower())
+            if match:
+                slots["filename"] = match.group(1).strip()
+            elif action_match:
+                # Fallback: extract the next word/words after the action that isn't "to" or "a"
+                after_action = text.lower().split(action_match.group(1), 1)[1].strip()
+                # Remove prefixes like "a new file called" etc if they were somehow missed
+                clean_name = re.sub(r'^(?:a|the|new|file)\s+', '', after_action).strip()
+                name_match = re.match(r'^([a-zA-Z0-9_\-\.]+)', clean_name)
+                if name_match and name_match.group(1) not in ["to", "in", "the", "a", "file"]:
+                    slots["filename"] = name_match.group(1)
+                    
+            folder_match = re.search(r'to\s+(?:the\s+)?([a-zA-Z0-9_]+)', text.lower())
+            if folder_match:
+                slots["folder"] = folder_match.group(1).strip()
+                
         elif intent == "system_control":
+            action_match = re.search(r'\b(lock|sleep|suspend|brightness|volume|mute)\b', text.lower())
+            if action_match:
+                action = action_match.group(1)
+                if action == "suspend": action = "sleep"
+                slots["action"] = action
+                
             match = re.search(r'(?:to|at)\s+([a-zA-Z0-9%]+)', text.lower())
             if match:
                 slots["level"] = match.group(1).strip()
