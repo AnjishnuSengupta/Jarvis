@@ -100,15 +100,25 @@ def chat():
     # Log Interaction
     needs_review = log_interaction(user_input, predicted_intent, float(confidence), extracted_slots)
     
-    if confidence < 0.35:
-        if dialogue_manager.pending_intent:
+    if dialogue_manager.pending_intent:
+        # If there's a pending intent and we either have low confidence or extracted NO new slots
+        # from the user's input, we should assume they are answering the clarification question.
+        if confidence < 0.35 or not extracted_slots:
             predicted_intent = "clarification_response"
             extracted_slots = extractor.extract_entities(user_input, predicted_intent)
-        else:
-            return jsonify({"response": "I'm sorry, I don't understand that command."})
+            # Remove the low confidence prefix since it's just a slot fill
+            needs_review = False
+    elif confidence < 0.35:
+        import random
+        fallbacks = [
+            "I'm sorry, I don't understand that command. I'm a task-oriented assistant, so try asking me to schedule a meeting or check the weather!",
+            "I didn't quite catch that. I am best at specific tasks like managing files, calendar, or generating code.",
+            "I'm not sure how to help with that. Could you try rephrasing as a specific command?"
+        ]
+        return jsonify({"response": random.choice(fallbacks)})
 
     response_prefix = ""
-    if needs_review:
+    if needs_review and predicted_intent != "clarification_response":
         response_prefix = f"[Low Confidence: {confidence:.2f}]: I'm not entirely sure, but I'll assume you meant '{predicted_intent}'. "
         
     # Dialogue Manager Processing

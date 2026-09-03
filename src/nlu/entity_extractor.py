@@ -162,7 +162,7 @@ class EntityExtractor:
                 slots["fact"] = match.group(1).strip()
                 
         elif intent == "calculate_math":
-            match = re.search(r'(?:is|calculate|solve|much is)\s+([0-9a-zA-Z+\-*/.\s]+)\??$', text.lower())
+            match = re.search(r'(?:is|calculate|solve|much is|integrate|derivative of|find|evaluate)\s+([0-9a-zA-Z+\-*/.\s\(\)\^∫]+)\??$', text.lower())
             if match:
                 slots["expression"] = match.group(1).strip()
             else:
