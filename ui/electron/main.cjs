@@ -11,6 +11,7 @@ const isDev = !app.isPackaged;
 // Fix for Linux network service crash / white screen
 app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-dev-shm-usage');
 app.disableHardwareAcceleration();
 
 function startFlaskBackend() {
