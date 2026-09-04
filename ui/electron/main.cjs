@@ -10,9 +10,19 @@ const isDev = !app.isPackaged;
 
 // Fix for Linux network service crash / white screen
 app.commandLine.appendSwitch('no-sandbox');
+app.commandLine.appendSwitch('disable-setuid-sandbox');
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-dev-shm-usage');
 app.disableHardwareAcceleration();
+
+// Force TMPDIR to a local folder in case the system /tmp is locked down
+const fs = require('fs');
+const localTmp = path.join(__dirname, '..', '.tmp');
+if (!fs.existsSync(localTmp)) {
+  fs.mkdirSync(localTmp, { recursive: true });
+}
+app.setPath('temp', localTmp);
+process.env.TMPDIR = localTmp;
 
 function startFlaskBackend() {
   const pythonExecutable = isDev ? 'python3' : path.join(process.resourcesPath, 'backend', 'server');
