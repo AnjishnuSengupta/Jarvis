@@ -69,8 +69,19 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage }),
       });
-      // The socket event 'state' will handle setting the state to 'thinking' and 'speaking'
-      // and appending Jarvis's response to the chatlog.
+      if (res.ok) {
+        const data = await res.json();
+        if (data.response) {
+          setChatLog((prev) => {
+            // Check if socket already added it to prevent duplicates
+            const last = prev[prev.length - 1];
+            if (last && last.role === 'jarvis' && last.text === data.response) return prev;
+            return [...prev, { role: 'jarvis', text: data.response }];
+          });
+          setJarvisState('speaking');
+          setTimeout(() => setJarvisState('idle'), 3000);
+        }
+      }
     } catch (err) {
       console.error(err);
       setJarvisState('idle');

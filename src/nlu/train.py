@@ -1,7 +1,11 @@
 import json
-import numpy as np
+import sys
 import os
+import numpy as np
 import random
+
+# Ensure the root project directory is in the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from src.nlu.tokenizer import Tokenizer
 from src.nlu.vectorizer import TFIDFVectorizer
