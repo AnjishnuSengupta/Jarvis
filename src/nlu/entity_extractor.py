@@ -179,6 +179,20 @@ class EntityExtractor:
             if match:
                 slots["query"] = match.group(1).strip()
                 
+        elif intent == "code_lookup":
+            match = re.search(r'(?:how do i|code for|snippet|how to|find my|lookup)\s+(.*)', text.lower())
+            if match:
+                slots["query"] = match.group(1).strip()
+            else:
+                slots["query"] = text.lower().strip()
+                
+        elif intent == "suggest_code_changes":
+            match = re.search(r'(?:changes for|improve|refactor my|refactor|changes to|optimize|suggestions for|analyze)\s+(.*)', text.lower())
+            if match:
+                slots["query"] = match.group(1).strip()
+            else:
+                slots["query"] = text.lower().strip()
+                
         elif intent == "clarification_response":
             # Could be a time, a name, a device, etc.
             # Try all extractions

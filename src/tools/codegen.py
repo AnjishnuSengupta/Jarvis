@@ -16,6 +16,22 @@ SECTION_KEYWORDS = {
     "testimonial": "Testimonials",
 }
 
+# Registry for running dev servers
+ACTIVE_PROCESSES = {}
+
+def stop_project(project_name: str):
+    if project_name in ACTIVE_PROCESSES:
+        try:
+            ACTIVE_PROCESSES[project_name].terminate()
+            ACTIVE_PROCESSES[project_name].wait(timeout=5)
+        except Exception as e:
+            print(f"Error stopping {project_name}: {e}")
+        del ACTIVE_PROCESSES[project_name]
+
+def cleanup_all_processes():
+    for name in list(ACTIVE_PROCESSES.keys()):
+        stop_project(name)
+
 def classify_project_kind(project_type_text: str) -> str:
     text = project_type_text.lower()
     if any(k in text for k in ["python script", "cli tool", "script"]):
@@ -34,8 +50,9 @@ def select_sections(project_type_text: str) -> list:
             sections.append(component)
     return sections
 
-def start_and_get_url(cmd, cwd, regex):
-    process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+def start_and_get_url(cmd, cwd, regex, project_name, env=None):
+    process = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    ACTIVE_PROCESSES[project_name] = process
     
     q = queue.Queue()
     def enqueue_output(out, queue):
@@ -138,7 +155,7 @@ def execute_codegen(slots):
                 
             # Install dependencies and start server
             subprocess.run(["npm", "install"], cwd=project_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            url = start_and_get_url(["npm", "run", "dev"], project_path, r'Local:\s+(http://localhost:\d+)')
+            url = start_and_get_url(["npm", "run", "dev"], project_path, r'Local:\s+(http://localhost:\d+)', project_name)
             
             if url:
                 return {"status": "success", "message": f"Successfully scaffolded {project_type} in workspace/{project_name}.", "project_type": project_type, "url": url}
@@ -157,10 +174,21 @@ def execute_codegen(slots):
             shutil.copy(src_svr, dest_svr)
             
             subprocess.run(["npm", "install"], cwd=project_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            url = start_and_get_url(["npm", "start"], project_path, r'listening on port (\d+)')
             
-            if url:
-                return {"status": "success", "message": f"Successfully scaffolded {project_type}.", "project_type": project_type, "url": f"http://localhost:{url}"}
+            # Find a free port for Express
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(("", 0))
+            free_port = s.getsockname()[1]
+            s.close()
+            
+            custom_env = os.environ.copy()
+            custom_env["PORT"] = str(free_port)
+            
+            url_port = start_and_get_url(["npm", "start"], project_path, r'listening on port (\d+)', project_name, env=custom_env)
+            
+            if url_port:
+                return {"status": "success", "message": f"Successfully scaffolded {project_type}.", "project_type": project_type, "url": f"http://localhost:{url_port}"}
             else:
                 return {"status": "error", "message": f"Scaffolded {project_type}, but failed to detect dev server running.", "project_type": project_type}
                 

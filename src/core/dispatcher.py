@@ -6,6 +6,8 @@ from src.tools.memory import execute_memory_store, execute_memory_query
 from src.tools.calendar import execute_schedule_meeting
 from src.tools.calculator import evaluate_math
 from src.tools.utilities import execute_time_date, execute_weather, execute_web_search, execute_joke, execute_system_status
+from src.tools.code_retrieval import execute_code_lookup
+from src.tools.code_suggestion import execute_code_suggestion
 
 from src.tools.file_ops import execute_create_file, execute_delete_file, execute_move_file, execute_read_file, execute_find_file
 
@@ -38,6 +40,8 @@ class ToolDispatcher:
             "web_search": execute_web_search,
             "tell_joke": execute_joke,
             "system_status": execute_system_status,
+            "code_lookup": execute_code_lookup,
+            "suggest_code_changes": execute_code_suggestion,
             "operation_cancelled": lambda slots: {"status": "success", "message": "Operation cancelled."},
         }
         

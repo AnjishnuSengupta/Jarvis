@@ -4,6 +4,7 @@ import sys
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
 
 from src.nlu.tokenizer import Tokenizer
 from src.nlu.vectorizer import TFIDFVectorizer
@@ -13,10 +14,12 @@ from src.dialogue.manager import DialogueManager
 from src.core.dispatcher import ToolDispatcher
 from src.core.templater import ResponseTemplater
 from src.data.logger import log_interaction
-from src.core.scheduler import start_background_scheduler
+from src.core.scheduler import start_background_scheduler, get_current_notifications
+from src.core.indexer import start_background_indexer
 
 app = Flask(__name__)
 CORS(app)  # Allow Tauri frontend to communicate with Flask
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Global state for Jarvis core components
 tokenizer = None
@@ -71,7 +74,19 @@ def init_jarvis():
         
     # Start Proactive Scheduler
     start_background_scheduler()
+    
+    # Start Background Code Indexer
+    start_background_indexer()
+    
     print("Jarvis Backend is ready on port 5000!")
+
+@app.route("/api/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "ok"})
+
+@app.route("/api/notifications", methods=["GET"])
+def notifications():
+    return jsonify({"notifications": get_current_notifications()})
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
@@ -121,12 +136,15 @@ def chat():
     if needs_review and predicted_intent != "clarification_response":
         response_prefix = f"[Low Confidence: {confidence:.2f}]: I'm not entirely sure, but I'll assume you meant '{predicted_intent}'. "
         
+    socketio.emit("state", {"status": "thinking"})
+    
     # Dialogue Manager Processing
     final_intent, final_slots, ready_to_dispatch, msg = dialogue_manager.process_turn(predicted_intent, extracted_slots)
     
     if not ready_to_dispatch:
         # Ask clarification question
         clarification = templater.generate_clarification(msg)
+        socketio.emit("state", {"status": "speaking", "text": clarification})
         return jsonify({"response": response_prefix + clarification})
     else:
         # Dispatch Tool
@@ -134,8 +152,14 @@ def chat():
         
         # Generate Response
         response = templater.generate_response(final_intent, final_slots, tool_result)
+        socketio.emit("state", {"status": "speaking", "text": response})
         return jsonify({"response": response_prefix + response, "tool_data": tool_result})
 
 if __name__ == "__main__":
     init_jarvis()
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    
+    import atexit
+    from src.tools.codegen import cleanup_all_processes
+    atexit.register(cleanup_all_processes)
+    
+    socketio.run(app, host="127.0.0.1", port=5000, debug=False, allow_unsafe_werkzeug=True)

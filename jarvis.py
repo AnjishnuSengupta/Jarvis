@@ -12,6 +12,14 @@ from src.core.dispatcher import ToolDispatcher
 from src.core.templater import ResponseTemplater
 from src.core.voice import VoiceEngine
 
+from rich.console import Console
+from rich.panel import Panel
+from rich.markdown import Markdown
+from rich.prompt import Prompt
+from rich.text import Text
+
+console = Console()
+
 def main():
     use_voice = "--voice" in sys.argv
     print(r"""
@@ -21,7 +29,7 @@ def main():
   | || / ___ \|_|_\   \_/  |___||___/
    \__/
     """)
-    print("Initializing Jarvis...")
+    console.print("[bold cyan]Initializing Jarvis...[/bold cyan]")
     
     if use_voice:
         print("Initializing Voice Engine...")
@@ -65,8 +73,8 @@ def main():
     dispatcher = ToolDispatcher()
     templater = ResponseTemplater()
     
-    print("Jarvis is online. Type 'exit' or 'quit' to stop.")
-    print("-" * 50)
+    console.print("[bold green]Jarvis is online. Type 'exit' or 'quit' to stop.[/bold green]")
+    console.print("-" * 50)
     
     while True:
         try:
@@ -77,7 +85,7 @@ def main():
                 if user_input.lower() in ["exit", "quit", "goodbye"]:
                     break
             else:
-                user_input = input("You: ")
+                user_input = Prompt.ask("[bold blue]You[/bold blue]")
                 if user_input.lower() in ["exit", "quit"]:
                     break
                     
@@ -124,7 +132,7 @@ def main():
                 if use_voice:
                     voice_engine.speak(msg_text)
                 else:
-                    print(f"Jarvis [Low Confidence: {confidence:.2f}]: {msg_text}")
+                    console.print(f"[yellow]Jarvis [Low Confidence: {confidence:.2f}]:[/yellow] {msg_text}")
                 
             # Dialogue Manager Processing
             final_intent, final_slots, ready_to_dispatch, msg = dialogue_manager.process_turn(predicted_intent, extracted_slots)
@@ -135,17 +143,25 @@ def main():
                 if use_voice:
                     voice_engine.speak(clarification)
                 else:
-                    print(f"Jarvis: {clarification}")
+                    console.print(f"[bold cyan]Jarvis:[/bold cyan] {clarification}")
             else:
-                # Dispatch Tool
-                tool_result = dispatcher.dispatch(final_intent, final_slots)
+                # Dispatch Tool with spinner
+                if use_voice:
+                    tool_result = dispatcher.dispatch(final_intent, final_slots)
+                else:
+                    with console.status("[bold green]Thinking...[/bold green]", spinner="dots"):
+                        tool_result = dispatcher.dispatch(final_intent, final_slots)
                 
                 # Generate Response
                 response = templater.generate_response(final_intent, final_slots, tool_result)
                 if use_voice:
                     voice_engine.speak(response)
                 else:
-                    print(f"Jarvis: {response}")
+                    if "```" in response:
+                        # Render markdown for code snippets
+                        console.print(Panel(Markdown(response), title="[bold cyan]Jarvis[/bold cyan]", border_style="cyan"))
+                    else:
+                        console.print(f"[bold cyan]Jarvis:[/bold cyan] {response}")
                 
         except (KeyboardInterrupt, EOFError):
             break

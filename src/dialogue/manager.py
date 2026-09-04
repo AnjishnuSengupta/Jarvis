@@ -19,6 +19,7 @@ class DialogueManager:
             "web_search": ["query"],
             "tell_joke": [],
             "system_status": [],
+            "code_lookup": ["query"],
             "clarification_response": [],
             "operation_cancelled": []
         }

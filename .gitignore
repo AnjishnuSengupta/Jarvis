@@ -11,11 +11,21 @@ data/credentials.json
 data/token.json
 data/*.db
 data/*.sqlite3
+.env
+credentials.json
+token.json
 
 # Models
 models/
 
 # UI Builds
 ui/node_modules/
+node_modules/
 ui/dist/
+dist/
+build/
 ui/src-tauri/target/
+
+# Workspace
+workspace/
+tests/

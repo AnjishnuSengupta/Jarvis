@@ -253,6 +253,34 @@ INTENTS = {
             "wait stop"
         ],
         "slots": {}
+    },
+    "code_lookup": {
+        "templates": [
+            "how do i {code_task}",
+            "find my {code_task} implementation",
+            "where did I write the code for {code_task}",
+            "look up {code_task} snippet",
+            "show me how to {code_task} in {language}",
+            "find the {code_task} function"
+        ],
+        "slots": {
+            "code_task": ["debounce a function", "binary search", "fetch api data", "reverse a string", "setup oauth", "configure tailwind", "sort array"],
+            "language": ["python", "javascript", "react", "typescript", "java", "c++"]
+        }
+    },
+    "suggest_code_changes": {
+        "templates": [
+            "suggest changes for {query}",
+            "how can I improve {query}",
+            "refactor my {query}",
+            "propose changes to {query}",
+            "how do I optimize {query}",
+            "give me suggestions for {query}",
+            "analyze {query}"
+        ],
+        "slots": {
+            "query": ["cli terminal", "debounce function", "binary search", "tailwind config", "fetch api", "React app component"]
+        }
     }
 }
 

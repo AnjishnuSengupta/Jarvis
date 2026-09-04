@@ -2,12 +2,10 @@ import json
 import numpy as np
 import os
 import random
-from tokenizer import Tokenizer
-from vectorizer import TFIDFVectorizer
-from classifier import IntentClassifier
 
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from src.nlu.tokenizer import Tokenizer
+from src.nlu.vectorizer import TFIDFVectorizer
+from src.nlu.classifier import IntentClassifier
 
 def load_data(path="data/synthetic_dataset.json"):
     with open(path, "r") as f:

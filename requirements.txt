@@ -14,3 +14,5 @@ pycaw; sys_platform == 'win32'
 wmi; sys_platform == 'win32'
 comtypes; sys_platform == 'win32'
 sympy
+flask-socketio
+rich

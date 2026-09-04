@@ -65,6 +65,9 @@ class ResponseTemplater:
                 "Operation cancelled.",
                 "Okay, I won't do that.",
                 "Cancelled."
+            ],
+            "code_lookup": [
+                "{message}"
             ]
         }
         

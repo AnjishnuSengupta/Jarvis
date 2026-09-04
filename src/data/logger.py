@@ -34,6 +34,17 @@ def init_db():
         )
     ''')
     
+    # Code snippets table for Phase 21
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS code_snippets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            description TEXT,
+            code TEXT,
+            source_path TEXT,
+            language TEXT
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
