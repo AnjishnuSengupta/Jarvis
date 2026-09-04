@@ -108,6 +108,11 @@ def main():
             confidence = probs[pred_idx]
             predicted_intent = idx_to_intent[str(pred_idx)]
             
+            # If we are waiting for a slot, strongly bias towards clarification_response
+            if dialogue_manager.pending_intent and confidence < 0.70:
+                predicted_intent = "clarification_response"
+                confidence = 1.0 # Override confidence so it doesn't trigger needs_review
+                
             # Extract Entities
             extracted_slots = extractor.extract_entities(user_input, predicted_intent)
             

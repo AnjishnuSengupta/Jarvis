@@ -136,7 +136,12 @@ INTENTS = {
             "what's up?",
             "who are you?",
             "thanks",
-            "thank you"
+            "thank you",
+            "hey jarvis",
+            "hello jarvis",
+            "jarvis",
+            "hey",
+            "hi jarvis"
         ],
         "slots": {}
     },
@@ -261,7 +266,9 @@ INTENTS = {
             "where did I write the code for {code_task}",
             "look up {code_task} snippet",
             "show me how to {code_task} in {language}",
-            "find the {code_task} function"
+            "find the {code_task} function",
+            "summarize the project in {code_task}",
+            "summarize {code_task}"
         ],
         "slots": {
             "code_task": ["debounce a function", "binary search", "fetch api data", "reverse a string", "setup oauth", "configure tailwind", "sort array"],

@@ -2,7 +2,7 @@
 
 <img src="https://media.giphy.com/media/26tn33aiTi1jIGsD6/giphy.gif" alt="Jarvis Core Engine" width="100%" style="border-radius: 10px; max-width: 800px;" />
 
-# Jarvis NLU & 3D HUD
+# Jarvis
 
 <samp>J.A.R.V.I.S — A From-Scratch Classical NLU Assistant with an Electron-powered Holographic HUD</samp>
 
@@ -45,15 +45,19 @@ This project focuses on bounding the assistant to task-oriented commands rather 
 ## Architecture Highlights
 
 ### 1. The Holographic 3D HUD (Electron + React Three Fiber)
+
 Jarvis is hosted inside a transparent, frameless **Electron** window. The user interface uses **React Three Fiber (WebGL)** to render a 3D Arc Reactor core, orbiting rings, and a particle field. The UI connects to the Python backend via **Flask-SocketIO** to receive real-time state events (`idle`, `thinking`, `speaking`), altering the color and animation speeds of the 3D meshes dynamically!
 
 ### 2. Autonomous Background Code Indexer
-Jarvis runs a `watchdog` daemon thread that silently monitors your `~/Documents` directory. It uses Python's `ast` module and Regex to automatically chunk `.py`, `.js`, and `.ts` files into distinct functions and classes. It even reads your `import` statements and hits the PyPI/NPM JSON APIs to grab package descriptions, enriching the metadata. These snippets are saved into an SQLite database. 
+
+Jarvis runs a `watchdog` daemon thread that silently monitors your `~/Documents` directory. It uses Python's `ast` module and Regex to automatically chunk `.py`, `.js`, and `.ts` files into distinct functions and classes. It even reads your `import` statements and hits the PyPI/NPM JSON APIs to grab package descriptions, enriching the metadata. These snippets are saved into an SQLite database.
 
 ### 3. Hand-rolled TF-IDF Code Retrieval
+
 When you ask Jarvis to "look up how I debounced a function", it uses a custom **TF-IDF Vectorizer** and **Cosine Similarity** to instantly query the SQLite `code_snippets` database, returning the exact function you wrote weeks ago, rendered in the terminal or UI.
 
 ### 4. Custom Tokenizer & Neural Network
+
 A highly optimized tokenizer lowercases text, strips punctuation, and builds a dynamic vocabulary. The Neural Network Intent Classifier is a custom 2-layer NN built purely with NumPy arrays (Forward pass, categorical cross-entropy loss, backward pass, and SGD optimizer).
 
 ---
@@ -115,20 +119,26 @@ Jarvis has been iteratively built to perform the following out-of-the-box:
 ## Usage
 
 ### Option A: Holographic Desktop Application (Recommended)
+
 Start the Electron desktop app. It will automatically spawn the Flask backend for you!
+
 ```bash
 cd ui
 npm run dev
 ```
 
 ### Option B: Rich CLI Mode
+
 Run Jarvis interactively in your terminal with beautiful syntax highlighting and spinners.
+
 ```bash
 python jarvis.py
 ```
 
 ### Option C: Voice Mode
+
 Run Jarvis with the microphone and speaker enabled for a hands-free experience.
+
 ```bash
 python jarvis.py --voice
 ```
