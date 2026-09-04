@@ -8,6 +8,11 @@ let flaskProcess;
 
 const isDev = !app.isPackaged;
 
+// Fix for Linux network service crash / white screen
+app.commandLine.appendSwitch('no-sandbox');
+app.commandLine.appendSwitch('disable-gpu');
+app.disableHardwareAcceleration();
+
 function startFlaskBackend() {
   const pythonExecutable = isDev ? 'python3' : path.join(process.resourcesPath, 'backend', 'server');
   const serverScript = path.join(__dirname, '..', '..', 'server.py');
