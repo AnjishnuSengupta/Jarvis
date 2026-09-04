@@ -2,7 +2,7 @@
   "name": "ui",
   "private": true,
   "version": "0.1.0",
-  "description": "Jarvis - An AI-powered local coding assistant",
+  "description": "Jarvis - An local assistant",
   "author": "Anjishnu Sengupta",
   "type": "module",
   "main": "electron/main.js",
