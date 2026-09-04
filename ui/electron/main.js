@@ -69,7 +69,7 @@ function createWindow() {
 
   if (isDev) {
     // Load Vite dev server
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:1420');
   } else {
     // Load built static files
     mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
