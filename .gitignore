@@ -29,3 +29,4 @@ ui/src-tauri/target/
 # Workspace
 workspace/
 tests/
+.tmp/
